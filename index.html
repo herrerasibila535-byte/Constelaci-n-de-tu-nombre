@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ritual de Alcestis: Versión Estelar</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300;1,500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --dark-bg: #050000;
+            --main-red: #8b0000; /* Rojo oscuro dominante */
+            --highlight-red: #ff4d4d;
+            --text-light: #e0d0d0;
+            --text-gold: #c5a059; /* Para detalles de sello/borde */
+            --parchment-bg: #1a1515; /* Fondo del pergamino */
+            --border-parchment: #4a0404; /* Borde del pergamino */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Muy importante para que no haya scroll */
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at center, rgba(20, 0, 0, 0.8) 0%, var(--dark-bg) 100%);
+            color: var(--text-light);
+            font-family: 'Playfair Display', serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- Corazón Anatómico (con SVG para mayor fidelidad y animación) --- */
+        .heart-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin-bottom: 30px;
+            opacity: 0; /* Inicialmente oculto para animación */
+            transform: scale(0.8);
+            filter: drop-shadow(0 0 25px rgba(var(--main-red), 0.8)); /* Resplandor */
+            animation: pulse-svg 1.8s infinite ease-in-out forwards;
+        }
+
+        .heart-svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--main-red);
+            stroke: var(--highlight-red);
+            stroke-width: 1;
+            transform: scale(1);
+            transition: transform 0.2s ease-out; /* Para el micro-latido */
+        }
+
+        /* Simulación de un corazón anatómico más complejo */
+        .heart-svg path {
+            filter: url(#heart-texture); /* Filtro para un aspecto más orgánico/texturizado */
+        }
+
+        /* --- Textos Flotantes --- */
+        .floating-text-group {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .floating-verse {
+            position: absolute;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            color: var(--highlight-red);
+            text-shadow: 0 0 10px rgba(var(--highlight-red), 0.5);
+            opacity: 0;
+            white-space: nowrap; /* Para que no se rompa la frase */
+            animation: fadeInOut 5s infinite;
+        }
+        .floating-verse:nth-child(1) { top: 20%; left: 50%; transform: translateX(-50%); animation-delay: 0s; }
+        .floating-verse:nth-child(2) { top: 40%; left: 15%; animation-delay: 1.5s; }
+        .floating-verse:nth-child(3) { top: 40%; right: 15%; animation-delay: 3s; }
+        .floating-verse:nth-child(4) { bottom: 20%; left: 50%; transform: translateX(-50%); animation-delay: 4.5s; }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            20%, 80% { opacity: 1; transform: translateY(0px); }
+        }
+
+        /* --- Pergamino y contenido --- */
+        .parchment-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none; /* Inactivo hasta que se muestre */
+            transition: opacity 1.5s ease-out;
+            z-index: 10;
+        }
+
+        .parchment-effect {
+            background: var(--parchment-bg);
+            border: 2px solid var(--border-parchment);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(var(--main-red), 0.2);
+            padding: 40px 30px;
+            width: 85%;
+            max-width: 480px;
+            border-radius: 8px;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0; /* Para la animación de entrada */
+        }
+
+        .parchment-effect::before, .parchment-effect::after {
+            content: '';
+            position: absolute;
+            width: 98%;
+            height: 15px;
+            left: 1%;
+            background: var(--parchment-bg);
+            border: 1px solid var(--border-parchment);
+            filter: brightness(0.9);
+            z-index: -1;
+            border-radius: 3px;
+        }
+        .parchment-effect::before { top: -10px; transform: rotate(-1deg); }
+        .parchment-effect::after { bottom: -10px; transform: rotate(1deg); }
+
+        .parchment-effect .gothic-header {
+            font-family: 'Cinzel', serif;
+            color: var(--text-gold);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px rgba(var(--text-gold), 0.5);
+        }
+        .parchment-effect .gothic-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+        .parchment-effect .signature {
+            font-family: 'Cinzel', serif;
+            color: var(--main-red);
+            font-size: 1rem;
+            text-align: right;
+            margin-top: 30px;
+            font-weight: bold;
+        }
+
+        /* Sello de Lacre */
+        .seal-animation {
+            width: 80px;
+            height: 80px;
+            background-color: var(--main-red);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -40px; /* Posicionado fuera y se anima */
+            left: 50%;
+            transform: translateX(-50%) scale(0); /* Inicialmente escondido */
+            box-shadow: 0 0 15px rgba(var(--main-red), 0.8), inset 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Cinzel', serif;
+            color: var(--text-gold);
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: 2px solid rgba(var(--text-gold), 0.5);
+        }
+
+        /* Indicador de interacción */
+        .hint-text {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0.3;
+            font-family: sans-serif;
+            pointer-events: none;
+            z-index: 5;
+            animation: pulse-hint 2s infinite ease-out;
+        }
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Decoraciones Góticas Inferiores (opcional, como imagen de fondo o SVG) */
+        .gothic-decorations {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23200000" d="M0 0h100v100H0z"/><path fill="none" stroke="%23400000" stroke-width="2" d="M10 50h80M50 10v80M30 30L70 70M30 70L70 30"/></svg>');
+            background-size: 50px 50px; /* Tamaño del patrón */
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <filter id="heart-texture">
+                <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" result="noise" />
+                <feDiffuseLighting in="noise" lightingColor="#fff" surfaceScale="5" result="light">
+                    <feDistantLight azimuth="225" elevation="45" />
+                </feDiffuseLighting>
+                <feComposite in="SourceGraphic" in2="light" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="heart-container" id="mainHeart">
+        <svg class="heart-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+            <path d="M50,90 C80,60 95,30 95,30 C95,15 80,5 65,5 C55,5 50,15 50,25 C50,15 45,5 35,5 C20,5 5,15 5,30 C5,30 20,60 50,90 Z" id="heartPath" />
+            <path d="M50,25 C55,15 65,10 70,15 S75,30 70,40 S60,50 50,55 M50,25 C45,15 35,10 30,15 S25,30 30,40 S40,50 50,55" fill="none" stroke-width="2" stroke-opacity="0.2" />
+        </svg>
+    </div>
+
+    <div class="floating-text-group" id="floatingTexts">
+        <div class="floating-verse" style="top: 25%; left: 50%; transform: translateX(-50%);">"Te adoro"</div>
+        <div class="floating-verse" style="top: 45%; left: 15%;">"Eres mi lenguaje"</div>
+        <div class="floating-verse" style="top: 45%; right: 15%;">"Mi mundo"</div>
+        <div class="floating-verse" style="bottom: 25%; left: 50%; transform: translateX(-50%);">"Dulce condena"</div>
+    </div>
+    
+    <div class="parchment-container" id="parchmentContainer">
+        <div class="parchment-effect" id="parchmentContent">
+            <div class="gothic-header" id="headerText">Ritual de Alcestis</div>
+            <p class="gothic-text" id="mainParchmentText"></p>
+            <div class="signature">Eternamente.</div>
+            <div class="seal-animation" id="seal">A</div>
+        </div>
+    </div>
+
+    <div class="hint-text" id="initialHint">Toca para sellar el pacto...</div>
+
+    <script>
+        const mainHeart = document.getElementById('mainHeart');
+        const heartSVG = document.querySelector('.heart-svg');
+        const floatingTexts = document.getElementById('floatingTexts');
+        const parchmentContainer = document.getElementById('parchmentContainer');
+        const parchmentContent = document.getElementById('parchmentContent');
+        const seal = document.getElementById('seal');
+        const initialHint = document.getElementById('initialHint');
+        const mainParchmentText = document.getElementById('mainParchmentText');
+        const headerText = document.getElementById('headerText');
+
+        // Textos del pergamino
+        const parchmentQuote = `
+            "Y yo caminaría por todos los desiertos de este mundo
+            y aun muerta te seguiría buscando,
+            a ti, que fuiste el lugar del amor…
+            Alejandra Pizarnik"
+            <br><br>
+            "Amarte… amarte… Dulce condena,
+            tan escrita en tu alma
+            como la mía en la tuya."
+            <br><br>
+            "Si la muerte alguna vez te reclamara, yo sería Alcestis:
+            me ofrecería sin temblar,
+            no por heroicidad,
+            sino porque amarte es mi forma más absoluta de existir."
+        `;
+
+        // --- GSAP Timeline para la introducción ---
+        const introTl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+        introTl
+            .fromTo(mainHeart, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 2, delay: 0.5 })
+            .fromTo(floatingTexts.children, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1.5, stagger: 0.5 }, "-=1")
+            .fromTo(initialHint, { opacity: 0, y: 10 }, { opacity: 0.7, y: 0, duration: 1 }, "-=1");
+
+        // --- Evento de Click para revelar el pergamino ---
+        document.body.addEventListener('click', revealParchment);
+
+        function revealParchment() {
+            // Evitar múltiples clicks
+            document.body.removeEventListener('click', revealParchment);
+            gsap.to(initialHint, { opacity: 0, duration: 0.5 }); // Ocultar el hint
+
+            // Ocultar corazón y textos flotantes
+            gsap.to(mainHeart, { opacity: 0, scale: 0.5, duration: 1.5, ease: "power2.in" });
+            gsap.to(floatingTexts.children, { opacity: 0, y: -20, duration: 1, stagger: 0.2 });
+
+            // Revelar el pergamino
+            gsap.to(parchmentContainer, { opacity: 1, pointerEvents: 'auto', duration: 2, delay: 1 });
+            gsap.fromTo(parchmentContent, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1.8, delay: 2.5, ease: "power3.out" });
+            
+            // Animación de tipeo del texto en el pergamino
+            gsap.to({}, {
+                duration: 3, // Duración total para escribir
+                delay: 3.5,
+                onUpdate: function() {
+                    const progress = this.progress();
+                    const textLength = parchmentQuote.length;
+                    const currentLength = Math.floor(textLength * progress);
+                    mainParchmentText.innerHTML = parchmentQuote.substring(0, currentLength);
+                },
+                ease: "none"
+            });
+
+            // Animación del sello de lacre
+            gsap.fromTo(seal, { scale: 0, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 1, delay: 7, ease: "back.out(1.7)" });
+        }
+
+        // --- Animación del Latido del Corazón SVG ---
+        gsap.to(heartSVG, {
+            keyframes: {
+                "0%": { scale: 1 },
+                "15%": { scale: 1.05 },
+                "30%": { scale: 1 },
+                "45%": { scale: 1.08 },
+                "100%": { scale: 1 }
+            },
+            duration: 1.8,
+            repeat: -1, // Repetir infinitamente
+            ease: "ease.inOut"
+        });
+
+        // --- Ajuste de Responsividad ---
+        window.addEventListener('resize', () => {
+            // No hay mucho que Three.js aquí, pero por si acaso.
+            // Los elementos CSS ya son bastante responsivos.
+        });
+
+    </script>
+</body>
+</html>
